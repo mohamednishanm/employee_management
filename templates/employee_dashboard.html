@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<!-- Main Container -->
+<div class="container mx-auto p-6">
+
+    <!-- Header Section -->
+    <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-800">Employee Dashboard</h1>
+        <div class="relative group">
+            <div class="flex items-center space-x-4 cursor-pointer">
+                <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                    <svg class="w-7 h-7 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M12 12a4 4 0 100-8 4 4 0 000 8z" />
+                    </svg>
+                </div>
+                <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</a>
+            </div>
+
+            <!-- Dropdown Content -->
+            <div class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
+                <p class="font-medium text-gray-700">Employee ID: {{ employee.login_id }}</p>
+                <p class="font-medium text-gray-700">Phone: {{ employee.phone_number }}</p>
+                <p class="font-medium text-gray-700">Role: {{ employee.role }}</p>
+                <p class="font-medium text-gray-700">Email: {{ employee.user.email }}</p>
+            
+                <!-- Skill Measurement Button -->
+                <div class="mt-4">
+                    <a href="{% url 'skill_measurement' %}" class="block bg-blue-500 text-white px-4 py-2 rounded-lg text-center hover:bg-blue-600 transition">
+                        Update Skills
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex gap-6">
+
+        <!-- Assigned Project Section (Left - 70%) -->
+        <div class="w-2/3 bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">Assigned Project</h2>
+            <h3 class="text-xl font-semibold text-gray-800">Project: Website Redesign</h3>
+            <p class="text-gray-600">Description: A complete redesign of the company's website for a better user experience.</p>
+            <p class="text-gray-600">Deadline: March 31, 2025</p>
+
+            <!-- Tasks Section -->
+            <h4 class="text-lg font-semibold mt-4">Assigned Tasks</h4>
+            <ul class="list-disc pl-6">
+                <li class="text-gray-700">
+                    <input type="checkbox" id="task1" class="mr-2">
+                    <label for="task1">Design Homepage - Status: In Progress - Deadline: March 1, 2025</label>
+                </li>
+                <li class="text-gray-700">
+                    <input type="checkbox" id="task2" class="mr-2">
+                    <label for="task2">Implement Footer - Status: Pending - Deadline: March 10, 2025</label>
+                </li>
+            </ul>
+
+            <!-- Mark as Completed Button -->
+            <div class="mt-4">
+                <button class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">
+                    Mark as Completed
+                </button>
+            </div>
+        </div>
+
+        <!-- Group Members Section (Right - 30%) -->
+        <div class="w-1/3 bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">Group Members</h2>
+            <div class="space-y-4">
+                <div class="bg-gray-200 p-4 rounded-lg">
+                    <p class="font-medium text-gray-800">Alice Smith</p>
+                    <p class="text-gray-600">Role: Developer</p>
+                    <p class="text-gray-600">Email: alice.smith@example.com</p>
+                </div>
+                <div class="bg-gray-200 p-4 rounded-lg">
+                    <p class="font-medium text-gray-800">Bob Johnson</p>
+                    <p class="text-gray-600">Role: UI/UX Designer</p>
+                    <p class="text-gray-600">Email: bob.johnson@example.com</p>
+                </div>
+                <div class="bg-gray-200 p-4 rounded-lg">
+                    <p class="font-medium text-gray-800">Charlie Brown</p>
+                    <p class="text-gray-600">Role: QA Engineer</p>
+                    <p class="text-gray-600">Email: charlie.brown@example.com</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Task Assignment Section -->
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+        <h2 class="text-2xl font-semibold mb-4">Assign Tasks to Team Members</h2>
+        <p class="text-gray-700">As a team leader, you can assign tasks to your group members.</p>
+
+        <!-- Select Group Member -->
+        <div class="mb-4">
+            <label for="memberSelect" class="block text-gray-700 font-medium">Select Member</label>
+            <select id="memberSelect" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="alice">Alice Smith</option>
+                <option value="bob">Bob Johnson</option>
+                <option value="charlie">Charlie Brown</option>
+            </select>
+        </div>
+
+        <!-- Enter Task Description -->
+        <div class="mb-4">
+            <label for="taskDescription" class="block text-gray-700 font-medium">Task Description</label>
+            <textarea id="taskDescription" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Enter task description here..."></textarea>
+        </div>
+
+        <!-- Set Deadline -->
+        <div class="mb-4">
+            <label for="taskDeadline" class="block text-gray-700 font-medium">Deadline</label>
+            <input type="date" id="taskDeadline" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <!-- Assign Task Button -->
+        <div class="mt-4">
+            <button class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+                Assign Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Project History Section -->
+    <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+        <h2 class="text-2xl font-semibold mb-4">Project History</h2>
+        <ul class="list-disc pl-6">
+            <li class="text-gray-700">Project: Website Redesign - Task: Design Homepage - Status: Completed - Completed on: February 20, 2025</li>
+            <li class="text-gray-700">Project: Website Redesign - Task: Implement Footer - Status: Pending - Deadline: March 10, 2025</li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>

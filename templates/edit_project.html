@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Edit Project</h1>
+        
+        <form method="POST" action="{% url 'edit_project' project.id %}">
+            {% csrf_token %}
+            
+            <!-- Project Title (Non-editable) -->
+            <div class="mb-4">
+                <label for="title" class="block text-gray-700 font-medium">Project Title</label>
+                <input type="text" name="title" id="title" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       value="{{ project.title }}" disabled>
+            </div>
+
+            <!-- Project Description (Editable) -->
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700 font-medium">Description</label>
+                <textarea name="description" id="description" rows="4" 
+                          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required>{{ project.description }}</textarea>
+            </div>
+
+            <!-- Project Deadline (Editable) -->
+            <div class="mb-4">
+                <label for="deadline" class="block text-gray-700 font-medium">Deadline</label>
+                <input type="date" name="deadline" id="deadline" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       value="{{ project.deadline|date:'Y-m-d' }}" required>
+            </div>
+
+            <!-- Task Assignment -->
+            <div id="task-container">
+                {% for task in project.tasks.all %}
+                <div class="task mb-4">
+                    <label for="task_name" class="block text-gray-700 font-medium">Task Name</label>
+                    <input type="text" name="task_name" value="{{ task.task_name }}" 
+                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+
+                    <label for="task_deadline" class="block text-gray-700 font-medium mt-2">Task Deadline</label>
+                    <input type="date" name="task_deadline" value="{{ task.task_deadline|date:'Y-m-d' }}" 
+                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="add-task-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                Add Another Task
+            </button>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-4">
+                Update Project
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Adding new task fields
+        document.getElementById('add-task-btn').addEventListener('click', function() {
+            var taskContainer = document.getElementById('task-container');
+            var newTask = document.createElement('div');
+            newTask.classList.add('task', 'mb-4');
+            newTask.innerHTML = `
+                <label for="task_name" class="block text-gray-700 font-medium">Task Name</label>
+                <input type="text" name="task_name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                
+                <label for="task_deadline" class="block text-gray-700 font-medium mt-2">Task Deadline</label>
+                <input type="date" name="task_deadline" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            `;
+            taskContainer.appendChild(newTask);
+        });
+    </script>
+</body>
+</html>

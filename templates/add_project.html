@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tech-stack-list {
+            list-style: none;
+            padding: 0;
+        }
+        .tech-stack-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .tech-stack-item span {
+            margin-right: 10px;
+        }
+        .tech-stack-item button {
+            background-color: #f56565;
+            color: white;
+            padding: 0.5rem;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .employee-list {
+            list-style: none;
+            padding: 0;
+        }
+        .employee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .employee-item button {
+            background-color: #f56565;
+            color: white;
+            padding: 0.5rem;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Add New Project</h1>
+        
+        <form method="POST" action="{% url 'add_project' %}">
+            {% csrf_token %}
+            
+            <!-- Project Title -->
+            <div class="mb-4">
+                <label for="title" class="block text-gray-700 font-medium">Project Title</label>
+                <input type="text" name="title" id="title" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       required>
+            </div>
+
+            <!-- Project Description -->
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700 font-medium">Description</label>
+                <textarea name="description" id="description" rows="4" 
+                          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required></textarea>
+            </div>
+
+            <!-- Project Start Date -->
+            <div class="mb-4">
+                <label for="start_date" class="block text-gray-700 font-medium">Start Date</label>
+                <input type="date" name="start_date" id="start_date" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       required>
+            </div>
+
+            <!-- Project Deadline -->
+            <div class="mb-4">
+                <label for="deadline" class="block text-gray-700 font-medium">Deadline</label>
+                <input type="date" name="deadline" id="deadline" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       required>
+            </div>
+
+            <!-- Number of Employees -->
+            <div class="mb-4">
+                <label for="num_employees" class="block text-gray-700 font-medium">Number of Employees</label>
+                <input type="number" name="num_employees" id="num_employees" 
+                       class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       required>
+            </div>
+
+            <!-- Technology Stack -->
+            <div class="mb-4">
+                <label for="technologies" class="block text-gray-700 font-medium mb-2">Technology Stack Required</label>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <input type="text" id="tech-search" 
+                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4" 
+                           placeholder="Search for technology...">
+                    
+                    <div id="tech-suggestion-list" class="mb-4 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-lg">
+                        <!-- Suggestions will appear here -->
+                    </div>
+                    
+                    <div class="mb-2">
+                        <h4 class="font-medium text-gray-700">Selected Technologies</h4>
+                    </div>
+                    <ul id="tech-stack-list" class="tech-stack-list"></ul>
+                    
+                    <!-- Hidden input to store selected technologies -->
+                    <input type="hidden" name="selected_technologies" id="selected-techs-input">
+                </div>
+            </div>
+
+            <!-- Employee List Display -->
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold mb-4">Selected Employees</h3>
+                <ul id="employee-list" class="employee-list"></ul>
+            </div>
+
+            <!-- Button to Select Employees based on ML Algorithm -->
+            <div class="mb-4">
+                <button type="button" id="select-employees-btn" 
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                    Match Employees Based on Skills
+                </button>
+            </div>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-4">
+                Create Project
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Technology stack options from the backend (populated from the same options as the skill assessment)
+        const technologies = {{ tech_stacks|safe }};
+        const techStackList = document.getElementById('tech-stack-list');
+        const techSearch = document.getElementById('tech-search');
+        const techSuggestionList = document.getElementById('tech-suggestion-list');
+        const selectEmployeesBtn = document.getElementById('select-employees-btn');
+        const employeeList = document.getElementById('employee-list');
+        const selectedTechsInput = document.getElementById('selected-techs-input');
+        
+        let selectedTechs = [];
+        let selectedEmployees = [];
+
+        // Initialize technology suggestion list
+        function updateTechSuggestions() {
+            const searchTerm = techSearch.value.toLowerCase();
+            
+            // Get tech stack values (assuming technologies is an object like the questions)
+            const techValues = Object.values(technologies);
+            
+            const filteredTechs = searchTerm ? 
+                techValues.filter(tech => tech.toLowerCase().includes(searchTerm)) : 
+                techValues;
+
+            techSuggestionList.innerHTML = '';
+            
+            filteredTechs.forEach(tech => {
+                if (!selectedTechs.includes(tech)) {
+                    const techItem = document.createElement('div');
+                    techItem.classList.add('p-2', 'hover:bg-gray-100', 'cursor-pointer', 'rounded');
+                    techItem.textContent = tech;
+                    techItem.onclick = function() {
+                        addTechnology(tech);
+                        techSearch.value = '';
+                        updateTechSuggestions();
+                    };
+                    techSuggestionList.appendChild(techItem);
+                }
+            });
+            
+            if (filteredTechs.length === 0) {
+                techSuggestionList.innerHTML = '<div class="p-2 text-gray-500">No matching technologies found</div>';
+            }
+        }
+
+        // Add technology to selected list
+        function addTechnology(tech) {
+            if (!selectedTechs.includes(tech)) {
+                selectedTechs.push(tech);
+                updateTechStackDisplay();
+                updateSelectedTechsInput();
+            }
+        }
+
+        // Update the hidden input with selected technologies
+        function updateSelectedTechsInput() {
+            selectedTechsInput.value = JSON.stringify(selectedTechs);
+        }
+
+        // Update technology stack display
+        function updateTechStackDisplay() {
+            techStackList.innerHTML = '';
+            selectedTechs.forEach(tech => {
+                const techItem = document.createElement('li');
+                techItem.classList.add('tech-stack-item', 'bg-blue-100', 'p-2', 'rounded', 'my-1');
+                techItem.innerHTML = `
+                    <span class="font-medium">${tech}</span>
+                    <button type="button" class="remove-tech-btn bg-red-500 text-white rounded px-2 py-1 text-xs">Remove</button>
+                `;
+                techStackList.appendChild(techItem);
+            });
+        }
+
+        // Handle technology search input
+        techSearch.addEventListener('input', updateTechSuggestions);
+        
+        // Initialize suggestions on page load
+        updateTechSuggestions();
+
+        // Remove technology from list
+        techStackList.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('remove-tech-btn')) {
+                const techItem = e.target.closest('.tech-stack-item');
+                const techName = techItem.querySelector('span').textContent;
+                selectedTechs = selectedTechs.filter(tech => tech !== techName);
+                updateTechStackDisplay();
+                updateSelectedTechsInput();
+                updateTechSuggestions();
+            }
+        });
+
+        // Simulate Employee Selection based on ML Algorithm
+        selectEmployeesBtn.addEventListener('click', function() {
+            // In reality, this would call an API to match employees based on selected technologies
+            // For now, we'll simulate with dummy data
+            
+            if (selectedTechs.length === 0) {
+                alert("Please select at least one technology first!");
+                return;
+            }
+            
+            // Simulating employee matching algorithm
+            const matchedEmployees = [
+                { name: 'John Doe', role: 'Full Stack Developer', match: '95%' },
+                { name: 'Jane Smith', role: 'UI/UX Designer', match: '87%' },
+                { name: 'Emily Davis', role: 'Project Manager', match: '82%' }
+            ];
+
+            // Automatically select the highest match as leader
+            selectedEmployees = matchedEmployees.map((employee, index) => {
+                if (index === 0) {
+                    // Mark the first employee as the leader (highest match)
+                    return { ...employee, leader: true };
+                }
+                return { ...employee, leader: false };
+            });
+
+            updateEmployeeDisplay();
+        });
+
+        // Update employee display
+        function updateEmployeeDisplay() {
+            employeeList.innerHTML = '';
+            selectedEmployees.forEach(employee => {
+                const employeeItem = document.createElement('li');
+                employeeItem.classList.add('employee-item', 'bg-gray-50', 'p-3', 'rounded', 'my-2', 'shadow-sm');
+                employeeItem.innerHTML = `
+                    <div>
+                        <span class="font-medium">${employee.name}</span> - ${employee.role} 
+                        ${employee.leader ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs ml-2">Team Lead</span>' : ''}
+                        <div class="text-sm text-gray-600">Skill Match: <span class="text-blue-600 font-medium">${employee.match}</span></div>
+                    </div>
+                    <button type="button" class="remove-employee-btn bg-red-500 text-white rounded px-3 py-1 text-sm">Remove</button>
+                `;
+                employeeList.appendChild(employeeItem);
+            });
+        }
+
+        // Remove employee from the list
+        employeeList.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('remove-employee-btn')) {
+                const employeeItem = e.target.closest('.employee-item');
+                const employeeName = employeeItem.querySelector('.font-medium').textContent;
+                selectedEmployees = selectedEmployees.filter(emp => emp.name !== employeeName);
+                updateEmployeeDisplay();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar with Logout -->
+    <div class="bg-blue-600 text-white py-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Admin Dashboard</h1>
+            <a href="{% url 'logout' %}" class="bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                Logout
+            </a>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-6">
+        <!-- Dashboard Header -->
+        <h1 class="text-3xl font-bold mb-6">Welcome, Admin!</h1>
+
+        <!-- Actions -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold">Manage Projects</h2>
+            <div class="flex space-x-4">
+                <a href="{% url 'add_project' %}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                    Add Project
+                </a>
+                <a href="{% url 'add_employee' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Add Employee
+                </a>
+            </div>
+        </div>
+
+        <!-- Project List -->
+        <div class="bg-white shadow rounded-lg overflow-hidden">
+            <table class="table-auto w-full">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="px-4 py-2 text-left">Title</th>
+                        <th class="px-4 py-2 text-left">Description</th>
+                        <th class="px-4 py-2 text-left">Start Date</th>
+                        <th class="px-4 py-2 text-left">Deadline</th>
+                        <th class="px-4 py-2 text-left">Status</th>
+                        <th class="px-4 py-2 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sample Project 1 -->
+                    <tr class="border-b">
+                        <td class="px-4 py-2">Project Alpha</td>
+                        <td class="px-4 py-2">Developing a new platform.</td>
+                        <td class="px-4 py-2">2025-01-01</td>
+                        <td class="px-4 py-2">2025-06-30</td>
+                        <td class="px-4 py-2">In Progress</td>
+                        <td class="px-4 py-2">
+                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Sample Project 2 -->
+                    <tr class="border-b">
+                        <td class="px-4 py-2">Project Beta</td>
+                        <td class="px-4 py-2">Improving backend infrastructure.</td>
+                        <td class="px-4 py-2">2024-11-15</td>
+                        <td class="px-4 py-2">2025-04-10</td>
+                        <td class="px-4 py-2">Completed</td>
+                        <td class="px-4 py-2">
+                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Sample Project 3 -->
+                    <tr class="border-b">
+                        <td class="px-4 py-2">Project Gamma</td>
+                        <td class="px-4 py-2">AI project for process automation.</td>
+                        <td class="px-4 py-2">2025-02-01</td>
+                        <td class="px-4 py-2">2025-07-15</td>
+                        <td class="px-4 py-2">Pending</td>
+                        <td class="px-4 py-2">
+                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Sample Project 4 -->
+                    <tr class="border-b">
+                        <td class="px-4 py-2">Project Delta</td>
+                        <td class="px-4 py-2">Redesign of the mobile app.</td>
+                        <td class="px-4 py-2">2024-09-10</td>
+                        <td class="px-4 py-2">2025-02-28</td>
+                        <td class="px-4 py-2">In Progress</td>
+                        <td class="px-4 py-2">
+                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

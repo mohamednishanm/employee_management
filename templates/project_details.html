@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Detail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Project Detail</h1>
+
+        <!-- Project Information -->
+        <div class="bg-white shadow rounded-lg p-6 mb-4">
+            <h2 class="text-2xl font-semibold mb-4">{{ project.title }}</h2>
+            <p class="mb-4"><strong>Description:</strong> {{ project.description }}</p>
+            <p class="mb-4"><strong>Start Date:</strong> 2025-01-01</p>
+            <p class="mb-4"><strong>Deadline:</strong> 2025-06-30</p>
+            <p class="mb-4"><strong>Status:</strong> In Progress</p>
+        </div>
+
+        <!-- Edit Project Button -->
+        <div class="bg-white shadow rounded-lg p-6 px-10 mb-4">
+            <a href="{% url 'edit_project'%}" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                Edit Project
+            </a>
+            <!-- Delete Project Button -->
+            {% comment %} <div class="bg-white shadow rounded-lg p-6 mb-4">
+                <form method="POST" action="{% url 'delete_project' %}">
+                    {% csrf_token %} {% endcomment %}
+                    <button type="submit" class="bg-red-500 text-white px-4 py-2 ml-4 rounded-lg hover:bg-red-600">
+                        Delete Project
+                    </button>
+                {% comment %} </form>
+            </div> {% endcomment %}
+        </div>
+
+        <!-- Employees Working on the Project -->
+        <div class="bg-white shadow rounded-lg p-6 mb-4">
+            <h3 class="text-xl font-semibold mb-4">Employees Working on This Project</h3>
+            <ul>
+                <li>John Doe - Developer (Leader)</li> <!-- Marking John as the Leader -->
+                <li>Jane Smith - UI/UX Designer</li>
+                <li>Emily Davis - Project Manager</li>
+            </ul>
+        </div>
+
+        <!-- Task Assignment -->
+        <div class="bg-white shadow rounded-lg p-6 mb-4">
+            <h3 class="text-xl font-semibold mb-4">Assign Tasks</h3>
+            
+            <!-- Existing Tasks List -->
+            <div class="mb-4">
+                <h4 class="text-lg font-semibold">Existing Tasks</h4>
+                <ul>
+                    <li>Task 1: Design Homepage - Deadline: 2025-02-15</li>
+                    <li>Task 2: Implement Shopping Cart - Deadline: 2025-03-01</li>
+                    <li>Task 3: Integrate Payment Gateway - Deadline: 2025-04-10</li>
+                </ul>
+            </div>
+
+            <!-- New Task Form (Dynamically Added) -->
+            <div id="new-task-container">
+                <!-- Dynamically added tasks will appear here -->
+            </div>
+
+            <!-- Button to Add a New Task -->
+            <button id="add-task-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 mt-4">
+                Add Task
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Adding new task fields dynamically
+        document.getElementById('add-task-btn').addEventListener('click', function() {
+            var taskContainer = document.getElementById('new-task-container');
+            
+            // Create a new task input form
+            var newTask = document.createElement('div');
+            newTask.classList.add('task', 'mb-6');
+            newTask.innerHTML = `
+                <div class="mb-4">
+                    <label for="task_name" class="block text-gray-700 font-medium">Task Name</label>
+                    <input type="text" name="task_name" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="task_deadline" class="block text-gray-700 font-medium">Task Deadline</label>
+                    <input type="date" name="task_deadline" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="employee" class="block text-gray-700 font-medium">Assign to Employee</label>
+                    <select name="employee" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <option value="1">John Doe - Developer (Leader)</option> <!-- Marking John as the Leader -->
+                        <option value="2">Jane Smith - UI/UX Designer</option>
+                        <option value="3">Emily Davis - Project Manager</option>
+                    </select>
+                </div>
+            `;
+            
+            taskContainer.appendChild(newTask);
+        });
+    </script>
+</body>
+</html>
