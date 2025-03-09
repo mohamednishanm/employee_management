@@ -50,6 +50,12 @@
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-bold mb-6">Add New Project</h1>
         
+        {% if warning_message %}
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+            <p>{{ warning_message }}</p>
+        </div>
+        {% endif %}
+        
         <form method="POST" action="{% url 'add_project' %}">
             {% csrf_token %}
             
@@ -58,6 +64,7 @@
                 <label for="title" class="block text-gray-700 font-medium">Project Title</label>
                 <input type="text" name="title" id="title" 
                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       value="{{ form_data.title|default:'' }}"
                        required>
             </div>
 
@@ -66,7 +73,7 @@
                 <label for="description" class="block text-gray-700 font-medium">Description</label>
                 <textarea name="description" id="description" rows="4" 
                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required></textarea>
+                          required>{{ form_data.description|default:'' }}</textarea>
             </div>
 
             <!-- Project Start Date -->
@@ -74,6 +81,7 @@
                 <label for="start_date" class="block text-gray-700 font-medium">Start Date</label>
                 <input type="date" name="start_date" id="start_date" 
                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       value="{{ form_data.start_date|default:'' }}"
                        required>
             </div>
 
@@ -82,6 +90,7 @@
                 <label for="deadline" class="block text-gray-700 font-medium">Deadline</label>
                 <input type="date" name="deadline" id="deadline" 
                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                       value="{{ form_data.deadline|default:'' }}"
                        required>
             </div>
 
@@ -90,7 +99,8 @@
                 <label for="num_employees" class="block text-gray-700 font-medium">Number of Employees</label>
                 <input type="number" name="num_employees" id="num_employees" 
                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                       required>
+                       value="{{ form_data.num_employees|default:'' }}"
+                       min="1" required>
             </div>
 
             <!-- Technology Stack -->
@@ -115,23 +125,86 @@
                 </div>
             </div>
 
-            <!-- Employee List Display -->
+            {% if recommended_team %}
+            <!-- Recommended Team Display -->
             <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-4">Selected Employees</h3>
-                <ul id="employee-list" class="employee-list"></ul>
+                <h3 class="text-lg font-semibold mb-4">Recommended Team</h3>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="mb-4 text-gray-600">The AI has recommended the following available team members based on the technology stack:</p>
+                    
+                    <!-- Team Leader Section -->
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-lg font-semibold text-green-800">Team Leader</h4>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Best Match for Leadership</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">The AI has selected the following team member as the recommended leader based on skill match:</p>
+                        
+                        {% for employee in recommended_team %}
+                            {% if employee.leader %}
+                            <div class="flex items-center bg-white p-3 rounded-lg border border-green-300">
+                                <div class="flex-grow">
+                                    <p class="font-medium text-gray-800">{{ employee.name }}</p>
+                                    <p class="text-gray-600">Role: {{ employee.role }}</p>
+                                    <p class="text-gray-600">Match: {{ employee.match }}</p>
+                                </div>
+                                <div>
+                                    <input type="radio" name="team_leader" id="leader_{{ employee.id }}" value="{{ employee.id }}" checked>
+                                    <label for="leader_{{ employee.id }}" class="ml-2 text-green-700 font-medium">Team Leader</label>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- All Team Members Table -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead>
+                                <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-6 text-left">Select</th>
+                                    <th class="py-3 px-6 text-left">Employee Name</th>
+                                    <th class="py-3 px-6 text-left">Role</th>
+                                    <th class="py-3 px-6 text-left">Match</th>
+                                    <th class="py-3 px-6 text-left">Leader</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for employee in recommended_team %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-100 {% if employee.leader %}bg-green-50{% endif %}">
+                                    <td class="py-3 px-6 text-left">
+                                        <input type="checkbox" name="team_member_{{ employee.id }}" checked>
+                                    </td>
+                                    <td class="py-3 px-6 text-left {% if employee.leader %}font-medium text-green-700{% endif %}">
+                                        {{ employee.name }}
+                                        {% if employee.leader %}
+                                        <span class="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Leader</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-6 text-left">{{ employee.role }}</td>
+                                    <td class="py-3 px-6 text-left">{{ employee.match }}</td>
+                                    <td class="py-3 px-6 text-left">
+                                        <input type="radio" name="team_leader" value="{{ employee.id }}" {% if employee.leader %}checked{% endif %}>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-
-            <!-- Button to Select Employees based on ML Algorithm -->
-            <div class="mb-4">
-                <button type="button" id="select-employees-btn" 
-                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                    Match Employees Based on Skills
-                </button>
-            </div>
-
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-4">
-                Create Project
+            
+            <!-- Create Project Button after team selection -->
+            <button type="submit" name="create_project" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition mt-4">
+                Create Project with Selected Team
             </button>
+            
+            {% else %}
+            <!-- Button to Match Employees using ML -->
+            <button type="submit" name="assign_team" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition mt-4">
+                Match Team with AI
+            </button>
+            {% endif %}
         </form>
     </div>
 
@@ -141,12 +214,16 @@
         const techStackList = document.getElementById('tech-stack-list');
         const techSearch = document.getElementById('tech-search');
         const techSuggestionList = document.getElementById('tech-suggestion-list');
-        const selectEmployeesBtn = document.getElementById('select-employees-btn');
-        const employeeList = document.getElementById('employee-list');
         const selectedTechsInput = document.getElementById('selected-techs-input');
         
         let selectedTechs = [];
-        let selectedEmployees = [];
+        
+        // Initialize with any pre-filled values (in case of form resubmission)
+        {% if form_data.selected_technologies %}
+        selectedTechs = {{ form_data.selected_technologies|safe }};
+        updateTechStackDisplay();
+        updateSelectedTechsInput();
+        {% endif %}
 
         // Initialize technology suggestion list
         function updateTechSuggestions() {
@@ -223,63 +300,6 @@
                 updateTechStackDisplay();
                 updateSelectedTechsInput();
                 updateTechSuggestions();
-            }
-        });
-
-        // Simulate Employee Selection based on ML Algorithm
-        selectEmployeesBtn.addEventListener('click', function() {
-            // In reality, this would call an API to match employees based on selected technologies
-            // For now, we'll simulate with dummy data
-            
-            if (selectedTechs.length === 0) {
-                alert("Please select at least one technology first!");
-                return;
-            }
-            
-            // Simulating employee matching algorithm
-            const matchedEmployees = [
-                { name: 'John Doe', role: 'Full Stack Developer', match: '95%' },
-                { name: 'Jane Smith', role: 'UI/UX Designer', match: '87%' },
-                { name: 'Emily Davis', role: 'Project Manager', match: '82%' }
-            ];
-
-            // Automatically select the highest match as leader
-            selectedEmployees = matchedEmployees.map((employee, index) => {
-                if (index === 0) {
-                    // Mark the first employee as the leader (highest match)
-                    return { ...employee, leader: true };
-                }
-                return { ...employee, leader: false };
-            });
-
-            updateEmployeeDisplay();
-        });
-
-        // Update employee display
-        function updateEmployeeDisplay() {
-            employeeList.innerHTML = '';
-            selectedEmployees.forEach(employee => {
-                const employeeItem = document.createElement('li');
-                employeeItem.classList.add('employee-item', 'bg-gray-50', 'p-3', 'rounded', 'my-2', 'shadow-sm');
-                employeeItem.innerHTML = `
-                    <div>
-                        <span class="font-medium">${employee.name}</span> - ${employee.role} 
-                        ${employee.leader ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs ml-2">Team Lead</span>' : ''}
-                        <div class="text-sm text-gray-600">Skill Match: <span class="text-blue-600 font-medium">${employee.match}</span></div>
-                    </div>
-                    <button type="button" class="remove-employee-btn bg-red-500 text-white rounded px-3 py-1 text-sm">Remove</button>
-                `;
-                employeeList.appendChild(employeeItem);
-            });
-        }
-
-        // Remove employee from the list
-        employeeList.addEventListener('click', function(e) {
-            if (e.target && e.target.classList.contains('remove-employee-btn')) {
-                const employeeItem = e.target.closest('.employee-item');
-                const employeeName = employeeItem.querySelector('.font-medium').textContent;
-                selectedEmployees = selectedEmployees.filter(emp => emp.name !== employeeName);
-                updateEmployeeDisplay();
             }
         });
     </script>

@@ -44,65 +44,60 @@
                         <th class="px-4 py-2 text-left">Start Date</th>
                         <th class="px-4 py-2 text-left">Deadline</th>
                         <th class="px-4 py-2 text-left">Status</th>
+                        <th class="px-4 py-2 text-left">Technologies</th>
                         <th class="px-4 py-2 text-left">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Sample Project 1 -->
-                    <tr class="border-b">
-                        <td class="px-4 py-2">Project Alpha</td>
-                        <td class="px-4 py-2">Developing a new platform.</td>
-                        <td class="px-4 py-2">2025-01-01</td>
-                        <td class="px-4 py-2">2025-06-30</td>
-                        <td class="px-4 py-2">In Progress</td>
-                        <td class="px-4 py-2">
-                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                View Details
-                            </a>
-                        </td>
-                    </tr>
-
-                    <!-- Sample Project 2 -->
-                    <tr class="border-b">
-                        <td class="px-4 py-2">Project Beta</td>
-                        <td class="px-4 py-2">Improving backend infrastructure.</td>
-                        <td class="px-4 py-2">2024-11-15</td>
-                        <td class="px-4 py-2">2025-04-10</td>
-                        <td class="px-4 py-2">Completed</td>
-                        <td class="px-4 py-2">
-                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                View Details
-                            </a>
-                        </td>
-                    </tr>
-
-                    <!-- Sample Project 3 -->
-                    <tr class="border-b">
-                        <td class="px-4 py-2">Project Gamma</td>
-                        <td class="px-4 py-2">AI project for process automation.</td>
-                        <td class="px-4 py-2">2025-02-01</td>
-                        <td class="px-4 py-2">2025-07-15</td>
-                        <td class="px-4 py-2">Pending</td>
-                        <td class="px-4 py-2">
-                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                View Details
-                            </a>
-                        </td>
-                    </tr>
-
-                    <!-- Sample Project 4 -->
-                    <tr class="border-b">
-                        <td class="px-4 py-2">Project Delta</td>
-                        <td class="px-4 py-2">Redesign of the mobile app.</td>
-                        <td class="px-4 py-2">2024-09-10</td>
-                        <td class="px-4 py-2">2025-02-28</td>
-                        <td class="px-4 py-2">In Progress</td>
-                        <td class="px-4 py-2">
-                            <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                View Details
-                            </a>
-                        </td>
-                    </tr>
+                    {% if projects %}
+                        {% for project in projects %}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-2">{{ project.title }}</td>
+                            <td class="px-4 py-2">{{ project.description|truncatechars:50 }}</td>
+                            <td class="px-4 py-2">{{ project.start_date }}</td>
+                            <td class="px-4 py-2">{{ project.deadline }}</td>
+                            <td class="px-4 py-2">
+                                {% if project.status == 'pending' %}
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Pending</span>
+                                {% elif project.status == 'in_progress' %}
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">In Progress</span>
+                                {% elif project.status == 'completed' %}
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Completed</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-2">
+                                <div class="flex flex-wrap gap-1">
+                                    {% for tech in project.technologies|slice:":3" %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">{{ tech }}</span>
+                                    {% endfor %}
+                                    {% if project.technologies|length > 3 %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">+{{ project.technologies|length|add:"-3" }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-2">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'project_detail' project.id %}" class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm">
+                                        View Details
+                                    </a>
+                                    {% if project.status != 'completed' %}
+                                    <form method="POST" action="{% url 'mark_project_completed' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="project_id" value="{{ project.id }}">
+                                        <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm">
+                                            Mark Complete
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="px-4 py-6 text-center text-gray-500">No projects found. Click "Add Project" to create one.</td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>

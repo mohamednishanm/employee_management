@@ -1,3 +1,4 @@
+{% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,16 +22,16 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 0112 15a9 9 0 016.879 2.804M12 12a4 4 0 100-8 4 4 0 000 8z" />
                     </svg>
                 </div>
-                <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</a>
+                <a href="{% url 'logout' %}" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</a>
             </div>
 
             <!-- Dropdown Content -->
-            <div class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4">
+            <div class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 z-10">
                 <p class="font-medium text-gray-700">Employee ID: {{ employee.login_id }}</p>
-                <p class="font-medium text-gray-700">Phone: {{ employee.phone_number }}</p>
+                <p class="font-medium text-gray-700">Name: {{ employee.user.username }}</p>
                 <p class="font-medium text-gray-700">Role: {{ employee.role }}</p>
                 <p class="font-medium text-gray-700">Email: {{ employee.user.email }}</p>
-            
+
                 <!-- Skill Measurement Button -->
                 <div class="mt-4">
                     <a href="{% url 'skill_measurement' %}" class="block bg-blue-500 text-white px-4 py-2 rounded-lg text-center hover:bg-blue-600 transition">
@@ -41,105 +42,283 @@
         </div>
     </div>
 
-    <div class="flex gap-6">
-
-        <!-- Assigned Project Section (Left - 70%) -->
-        <div class="w-2/3 bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-4">Assigned Project</h2>
-            <h3 class="text-xl font-semibold text-gray-800">Project: Website Redesign</h3>
-            <p class="text-gray-600">Description: A complete redesign of the company's website for a better user experience.</p>
-            <p class="text-gray-600">Deadline: March 31, 2025</p>
-
-            <!-- Tasks Section -->
-            <h4 class="text-lg font-semibold mt-4">Assigned Tasks</h4>
-            <ul class="list-disc pl-6">
-                <li class="text-gray-700">
-                    <input type="checkbox" id="task1" class="mr-2">
-                    <label for="task1">Design Homepage - Status: In Progress - Deadline: March 1, 2025</label>
-                </li>
-                <li class="text-gray-700">
-                    <input type="checkbox" id="task2" class="mr-2">
-                    <label for="task2">Implement Footer - Status: Pending - Deadline: March 10, 2025</label>
-                </li>
-            </ul>
-
-            <!-- Mark as Completed Button -->
-            <div class="mt-4">
-                <button class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition">
-                    Mark as Completed
-                </button>
-            </div>
-        </div>
-
-        <!-- Group Members Section (Right - 30%) -->
-        <div class="w-1/3 bg-white p-6 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold mb-4">Group Members</h2>
-            <div class="space-y-4">
-                <div class="bg-gray-200 p-4 rounded-lg">
-                    <p class="font-medium text-gray-800">Alice Smith</p>
-                    <p class="text-gray-600">Role: Developer</p>
-                    <p class="text-gray-600">Email: alice.smith@example.com</p>
-                </div>
-                <div class="bg-gray-200 p-4 rounded-lg">
-                    <p class="font-medium text-gray-800">Bob Johnson</p>
-                    <p class="text-gray-600">Role: UI/UX Designer</p>
-                    <p class="text-gray-600">Email: bob.johnson@example.com</p>
-                </div>
-                <div class="bg-gray-200 p-4 rounded-lg">
-                    <p class="font-medium text-gray-800">Charlie Brown</p>
-                    <p class="text-gray-600">Role: QA Engineer</p>
-                    <p class="text-gray-600">Email: charlie.brown@example.com</p>
+    {% if active_projects %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left Column: Projects -->
+        <div class="lg:col-span-2">
+            {% for project in active_projects %}
+            <!-- Assigned Project Section -->
+            <div class="w-full bg-white p-6 rounded-lg shadow-lg mb-6">
+                <h2 class="text-2xl font-semibold mb-4">Assigned Project</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800">Project: {{ project.title }}</h3>
+                        <p class="text-gray-600"><strong>Description:</strong> {{ project.description }}</p>
+                        <p class="text-gray-600"><strong>Start Date:</strong> {{ project.start_date }}</p>
+                        <p class="text-gray-600"><strong>Deadline:</strong> {{ project.deadline }}</p>
+                        <p class="text-gray-600"><strong>Status:</strong> {{ project.get_status_display }}</p>
+                        
+                        <div class="mt-4">
+                            <h4 class="font-semibold text-gray-700">Required Technologies:</h4>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                {% for tech in project.technologies %}
+                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">{{ tech }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <!-- Tasks Section -->
+                        {% if assigned_tasks %}
+                        <h4 class="text-lg font-semibold mt-4">Assigned Tasks</h4>
+                        <ul class="list-disc pl-6">
+                            {% for task in assigned_tasks %}
+                            {% if task.project == project %}
+                            <li class="text-gray-700 my-2">
+                                <div class="flex items-center">
+                                    {% comment %} <input type="checkbox" id="task{{ task.id }}" class="mr-2" {% if task.status == 'completed' %}checked{% endif %}> {% endcomment %}
+                                    <label for="task{{ task.id }}">{{ task.task_name }} - Status: {{ task.get_status_display }} - Deadline: {{ task.deadline }}</label>
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-gray-600 mt-4">No tasks assigned yet.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
 
+        <!-- Right Column: Team Members -->
+        <div class="lg:col-span-1">
+            <!-- Team Members Card -->
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+                <h2 class="text-2xl font-semibold mb-4">Project Team</h2>
+                <div class="space-y-4">
+                    {% for project in active_projects %}
+                    <div class="mb-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">{{ project.title }}</h3>
+                        
+                        {% with team_members=projects_team_members|get_item:project.id %}
+                        {% if team_members %}
+                        <div class="space-y-3">
+                            {% for member in team_members %}
+                            <div class="bg-gray-100 p-3 rounded-lg {% if member.is_leader %}border-l-4 border-green-500{% endif %}">
+                                <p class="font-medium text-gray-800">
+                                    {{ member.user.username }}
+                                    {% if member.is_leader %}
+                                    <span class="ml-2 bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">Team Lead</span>
+                                    {% endif %}
+                                    {% if member.id == employee.id %}
+                                    <span class="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">You</span>
+                                    {% endif %}
+                                </p>
+                                <p class="text-gray-600 text-sm">Role: {{ member.role }}</p>
+                                <p class="text-gray-600 text-sm">Email: {{ member.user.email }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-gray-500">No team members assigned to this project.</p>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if is_team_leader %}
+            <!-- Status Update Section for Team Leaders -->
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+                <h2 class="text-xl font-semibold mb-4">Update Project Status</h2>
+                
+                <form method="POST" action="{% url 'update_project_status' %}">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <!-- Project Selection -->
+                        <div>
+                            <label for="project_id" class="block text-gray-700 text-sm font-medium mb-2">Select Project</label>
+                            <select id="project_id" name="project_id" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                {% for project in led_projects %}
+                                <option value="{{ project.id }}">{{ project.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Status Selection -->
+                        <div>
+                            <label for="status" class="block text-gray-700 text-sm font-medium mb-2">Update Status</label>
+                            <select id="status" name="status" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Update Button -->
+                        <div>
+                            <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Task Assignment Section for Team Leaders -->
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+                <h2 class="text-xl font-semibold mb-4">Assign Tasks</h2>
+                <p class="text-gray-700 mb-4">As a team leader, you can assign tasks to your team members.</p>
+
+                <!-- Form for task assignment -->
+                <form method="POST" action="{% url 'assign_task' %}">
+                    {% csrf_token %}
+                    <!-- Select Group Member -->
+                    <div class="mb-4">
+                        <label for="team_member" class="block text-gray-700 font-medium mb-1">Select Member</label>
+                        <select id="team_member" name="team_member" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            {% for member in team_members %}
+                            <option value="{{ member.id }}">{{ member.name }} - {{ member.role }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Select Project -->
+                    <div class="mb-4">
+                        <label for="project" class="block text-gray-700 font-medium mb-1">Select Project</label>
+                        <select id="project" name="project" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            {% for project in led_projects %}
+                            <option value="{{ project.id }}">{{ project.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Task Name -->
+                    <div class="mb-4">
+                        <label for="task_name" class="block text-gray-700 font-medium mb-1">Task Description</label>
+                        <textarea id="task_name" name="task_name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="2" placeholder="Enter task description here..."></textarea>
+                    </div>
+
+                    <!-- Set Deadline -->
+                    <div class="mb-4">
+                        <label for="deadline" class="block text-gray-700 font-medium mb-1">Deadline</label>
+                        <input type="date" id="deadline" name="deadline" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Assign Task Button -->
+                    <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                        Assign Task
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
     </div>
-
-    <!-- Task Assignment Section -->
-    <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
-        <h2 class="text-2xl font-semibold mb-4">Assign Tasks to Team Members</h2>
-        <p class="text-gray-700">As a team leader, you can assign tasks to your group members.</p>
-
-        <!-- Select Group Member -->
-        <div class="mb-4">
-            <label for="memberSelect" class="block text-gray-700 font-medium">Select Member</label>
-            <select id="memberSelect" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="alice">Alice Smith</option>
-                <option value="bob">Bob Johnson</option>
-                <option value="charlie">Charlie Brown</option>
-            </select>
-        </div>
-
-        <!-- Enter Task Description -->
-        <div class="mb-4">
-            <label for="taskDescription" class="block text-gray-700 font-medium">Task Description</label>
-            <textarea id="taskDescription" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Enter task description here..."></textarea>
-        </div>
-
-        <!-- Set Deadline -->
-        <div class="mb-4">
-            <label for="taskDeadline" class="block text-gray-700 font-medium">Deadline</label>
-            <input type="date" id="taskDeadline" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-
-        <!-- Assign Task Button -->
-        <div class="mt-4">
-            <button class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
-                Assign Task
-            </button>
-        </div>
+    {% else %}
+    <div class="w-full bg-white p-6 rounded-lg shadow-lg mb-6">
+        <h2 class="text-2xl font-semibold mb-4">No Projects Assigned</h2>
+        <p class="text-gray-600">You don't have any projects assigned to you yet.</p>
     </div>
+    {% endif %}
 
     <!-- Project History Section -->
-    <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
-        <h2 class="text-2xl font-semibold mb-4">Project History</h2>
-        <ul class="list-disc pl-6">
-            <li class="text-gray-700">Project: Website Redesign - Task: Design Homepage - Status: Completed - Completed on: February 20, 2025</li>
-            <li class="text-gray-700">Project: Website Redesign - Task: Implement Footer - Status: Pending - Deadline: March 10, 2025</li>
-        </ul>
+    {% comment %} {% if assigned_tasks %}
+    <div class="bg-white p-6 rounded-lg shadow-lg mt-6">
+        <h2 class="text-2xl font-semibold mb-4">Task History</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 text-left">Project</th>
+                        <th class="py-3 px-6 text-left">Task</th>
+                        <th class="py-3 px-6 text-left">Deadline</th>
+                        <th class="py-3 px-6 text-left">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in assigned_tasks %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-100">
+                        <td class="py-3 px-6 text-left">{{ task.project.title }}</td>
+                        <td class="py-3 px-6 text-left">{{ task.task_name }}</td>
+                        <td class="py-3 px-6 text-left">{{ task.deadline }}</td>
+                        <td class="py-3 px-6 text-left">
+                            {% if task.status == 'pending' %}
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">Pending</span>
+                            {% elif task.status == 'in_progress' %}
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">In Progress</span>
+                            {% elif task.status == 'completed' %}
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">Completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+    {% endif %} {% endcomment %}
 
 </div>
+
+<script>
+    // JavaScript for handling task status updates
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const taskId = this.id.replace('task', '');
+            console.log(`Task ${taskId} status changed to ${this.checked ? 'completed' : 'pending'}`);
+            
+            // Get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            const csrftoken = getCookie('csrftoken');
+            
+            // Make AJAX request to update task status
+            fetch('/update_task_status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    status: this.checked ? 'completed' : 'pending'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log('Task status updated successfully');
+                } else {
+                    console.error('Error updating task status:', data.message);
+                    // Revert checkbox state on error
+                    this.checked = !this.checked;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Revert checkbox state on error
+                this.checked = !this.checked;
+            });
+        });
+    });
+</script>
 
 </body>
 </html>

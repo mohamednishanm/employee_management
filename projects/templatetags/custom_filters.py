@@ -3,9 +3,7 @@ from django import template
 register = template.Library()
 
 @register.filter
-def get(dictionary, key):
+def get_item(dictionary, key):
     """Get a value from a dictionary by key"""
-    key_str = str(key)
-    if dictionary and key_str in dictionary:
-        return str(dictionary[key_str])
-    return None
+    key = int(key) if isinstance(key, str) and key.isdigit() else key
+    return dictionary.get(key)

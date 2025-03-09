@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 {% load custom_filters %}
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -31,27 +31,27 @@
           <li>5: Expert - Mastery level, can mentor others, familiar with advanced concepts</li>
         </ul>
         
-        <!-- Tech Stack Questions -->
+        <!-- Tech Stack Questions (Using formatted_ratings) -->
         <div class="space-y-4">
-          {% for key, tech in tech_stacks.items %}
+          {% for rating in formatted_ratings %}
           <div class="mb-6 p-4 bg-white rounded-lg shadow">
             <label
-              for="tech_{{ key }}"
+              for="tech_{{ rating.key }}"
               class="block text-gray-700 font-medium text-lg mb-2"
-              >{{ tech }}</label>
+              >{{ rating.tech }}</label>
             <div class="flex items-center space-x-4">
               {% for value in "12345" %}
                 <div class="flex items-center">
                   <input
                     type="radio"
-                    id="tech_{{ key }}_{{ value }}"
-                    name="tech_{{ key }}"
+                    id="tech_{{ rating.key }}_{{ value }}"
+                    name="tech_{{ rating.key }}"
                     value="{{ value }}"
                     class="form-radio text-blue-500 h-5 w-5"
-                    {% if existing_ratings and existing_ratings|get:key == value %}checked{% endif %}
+                    {% if rating.rating == value %}checked{% endif %}
                     required
                   />
-                  <label for="tech_{{ key }}_{{ value }}" class="ml-2 text-gray-700">{{ value }}</label>
+                  <label for="tech_{{ rating.key }}_{{ value }}" class="ml-2 text-gray-700">{{ value }}</label>
                 </div>
               {% endfor %}
             </div>
